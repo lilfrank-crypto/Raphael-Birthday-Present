@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raphael's Road Trip — Happy Birthday!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dusk:#2E1F47;
+    --dusk2:#4B2E63;
+    --coral:#FF6F59;
+    --marigold:#FFB627;
+    --tarmac:#1B1B24;
+    --cream:#FFF6E9;
+    --teal:#2FA88A;
+    --white:#ffffff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--tarmac);
+    color:var(--cream);
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Baloo 2',cursive;}
+  .stamp{font-family:'Space Mono',monospace;}
+
+  #musicBtn{
+    position:fixed;
+    top:16px;
+    right:16px;
+    z-index:150;
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    background:var(--cream);
+    color:var(--dusk);
+    border:none;
+    padding:10px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,0.35);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:transform 0.15s ease;
+  }
+  #musicBtn:hover{transform:translateY(-2px);}
+
+  #cover{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:linear-gradient(160deg,var(--dusk) 0%, var(--dusk2) 45%, var(--coral) 100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    transition:transform 0.9s cubic-bezier(.65,0,.35,1), opacity 0.9s ease;
+  }
+  #cover.opened{transform:translateY(-100%);opacity:0.4;pointer-events:none;}
+  .cover-badge{
+    font-family:'Space Mono',monospace;
+    letter-spacing:3px;
+    font-size:12px;
+    color:var(--marigold);
+    border:1px solid var(--marigold);
+    padding:6px 14px;
+    border-radius:999px;
+    margin-bottom:22px;
+    text-transform:uppercase;
+  }
+  #cover h1{
+    font-size:clamp(38px,8vw,84px);
+    color:var(--cream);
+    line-height:1.05;
+    text-shadow:0 6px 0 rgba(0,0,0,0.25);
+  }
+  #cover h1 span{color:var(--marigold);}
+  #cover p{
+    margin-top:18px;
+    font-size:clamp(15px,2vw,19px);
+    max-width:480px;
+    color:rgba(255,246,233,0.85);
+  }
+  #startBtn{
+    margin-top:40px;
+    font-family:'Baloo 2',cursive;
+    font-size:20px;
+    font-weight:700;
+    background:var(--coral);
+    color:var(--white);
+    border:none;
+    padding:18px 42px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 10px 0 #C7473A, 0 14px 24px rgba(0,0,0,0.35);
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  #startBtn:hover{transform:translateY(-3px);}
+  #startBtn:active{transform:translateY(6px);box-shadow:0 4px 0 #C7473A;}
+
+  .roadline-mini{width:120px;height:6px;margin-top:34px;position:relative;overflow:hidden;border-radius:4px;background:rgba(255,246,233,0.15);}
+  .roadline-mini::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,var(--marigold) 0 14px, transparent 14px 24px);animation:dash 1.1s linear infinite;}
+  @keyframes dash{to{transform:translateX(-24px);}}
+
+  #journey{position:relative;}
+
+  .hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 20px;
+    background:radial-gradient(circle at 50% 20%, var(--dusk2), var(--tarmac) 70%);
+    position:relative;
+  }
+  .hero .eyebrow{
+    font-family:'Space Mono',monospace;
+    color:var(--marigold);
+    letter-spacing:4px;
+    font-size:13px;
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .hero h1{
+    font-size:clamp(40px,9vw,100px);
+    line-height:1;
+    color:var(--cream);
+  }
+  .hero h1 .hl{color:var(--coral);}
+  .hero .sub{
+    margin-top:20px;
+    max-width:520px;
+    font-size:clamp(15px,2vw,18px);
+    color:rgba(255,246,233,0.75);
+  }
+  .scroll-hint{
+    margin-top:60px;
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:rgba(255,246,233,0.5);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .scroll-hint .arrow{animation:bounce 1.6s infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+
+  .road-wrap{
+    position:relative;
+    max-width:1000px;
+    margin:0 auto;
+    padding:60px 20px 120px;
+  }
+  .road-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    pointer-events:none;
+    overflow:visible;
+  }
+  #travelIcon{
+    position:absolute;
+    left:0;
+    top:0;
+    font-size:30px;
+    transform:translate(-50%,-50%);
+    z-index:5;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+    transition:left 0.05s linear, top 0.05s linear;
+  }
+
+  .stop{
+    position:relative;
+    z-index:2;
+    width:44%;
+    margin-bottom:150px;
+    opacity:0;
+    transform:translateY(50px);
+    transition:opacity 0.7s ease, transform 0.7s ease;
+  }
+  .stop.visible{opacity:1;transform:translateY(0);}
+  .stop:nth-child(odd){margin-right:56%;text-align:right;}
+  .stop:nth-child(even){margin-left:56%;text-align:left;}
+
+  .sign{
+    display:inline-block;
+    background:var(--cream);
+    color:var(--tarmac);
+    border-radius:14px;
+    padding:14px 16px 18px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.4);
+    max-width:340px;
+    transform:rotate(var(--tilt,-1deg));
+  }
+  .stop:nth-child(even) .sign{--tilt:1deg;}
+  .sign img{
+    width:100%;
+    display:block;
+    border-radius:8px;
+    aspect-ratio:4/5;
+    object-fit:cover;
+    object-position: center 18%;
+  }
+  .sign .tag{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--coral);
+    margin-top:12px;
+  }
+  .sign .cap{
+    font-family:'Baloo 2',cursive;
+    font-weight:700;
+    font-size:19px;
+    margin-top:4px;
+    color:var(--dusk);
+  }
+  .sign .note{
+    font-size:13.5px;
+    margin-top:6px;
+    color:#4a4353;
+    line-height:1.4;
+  }
+
+  @media(max-width:760px){
+    .stop{width:calc(100% - 70px);margin-left:70px !important;margin-right:0 !important;text-align:left !important;}
+    .sign{transform:rotate(-1deg) !important;}
+  }
+
+  .game-section{
+    min-height:100vh;
+    background:linear-gradient(180deg,var(--tarmac), var(--dusk) 60%, var(--dusk2));
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:60px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .game-section h2{
+    font-size:clamp(30px,5vw,48px);
+    color:var(--cream);
+  }
+  .game-section .sub{
+    margin-top:10px;
+    color:rgba(255,246,233,0.75);
+    max-width:460px;
+  }
+  #balloonField{
+    position:relative;
+    width:100%;
+    max-width:720px;
+    height:420px;
+    margin-top:40px;
+  }
+  .balloon{
+    position:absolute;
+    bottom:-120px;
+    width:64px;
+    height:80px;
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    cursor:pointer;
+    animation:float 9s linear forwards;
+    box-shadow:inset -8px -10px 0 rgba(0,0,0,0.08), 0 10px 20px rgba(0,0,0,0.25);
+  }
+  .balloon::after{
+    content:"";
+    position:absolute;
+    bottom:-26px;
+    left:50%;
+    width:1.5px;
+    height:26px;
+    background:rgba(255,246,233,0.4);
+  }
+  @keyframes float{
+    0%{bottom:-120px;transform:translateX(0) rotate(0deg);}
+    100%{bottom:460px;transform:translateX(var(--drift,20px)) rotate(6deg);}
+  }
+  .balloon.popped{animation:pop 0.25s ease forwards;pointer-events:none;}
+  @keyframes pop{to{transform:scale(1.6);opacity:0;}}
+
+  #gameProgress{
+    margin-top:26px;
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    color:var(--marigold);
+    letter-spacing:1px;
+  }
+
+  .finale{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:60px 24px;
+    background:radial-gradient(circle at 50% 30%, var(--dusk2), var(--tarmac) 75%);
+    position:relative;
+    overflow:hidden;
+  }
+  .finale .signpost{
+    font-family:'Space Mono',monospace;
+    background:var(--marigold);
+    color:var(--tarmac);
+    padding:8px 20px;
+    border-radius:6px;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:26px;
+    transform:rotate(-2deg);
+  }
+  .finale h2{
+    font-size:clamp(34px,7vw,72px);
+    color:var(--cream);
+    line-height:1.08;
+  }
+  .finale h2 .hl{color:var(--coral);}
+  #finaleMsg{
+    margin-top:24px;
+    max-width:600px;
+    font-size:clamp(16px,2.2vw,19px);
+    color:rgba(255,246,233,0.9);
+    line-height:1.7;
+    min-height:120px;
+  }
+  #finaleMsg .cursor{display:inline-block;width:2px;background:var(--marigold);animation:blink 0.9s infinite;margin-left:2px;}
+  @keyframes blink{50%{opacity:0;}}
+
+  #confettiBtn{
+    margin-top:34px;
+    font-family:'Baloo 2',cursive;
+    font-size:18px;
+    font-weight:700;
+    background:var(--teal);
+    color:var(--white);
+    border:none;
+    padding:16px 36px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 8px 0 #1e7a63;
+    transition:transform 0.15s ease;
+    position:relative;
+    z-index:10;
+  }
+  #confettiBtn:hover{transform:translateY(-3px);}
+  #confettiBtn:active{transform:translateY(5px);box-shadow:0 3px 0 #1e7a63;}
+
+  .footer-note{
+    margin-top:50px;
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:rgba(255,246,233,0.4);
+    position:relative;
+    z-index:10;
+  }
+
+  .runners{
+    position:absolute;
+    left:0;
+    width:100%;
+    height:0;
+    pointer-events:none;
+    z-index:3;
+  }
+  .runner{
+    position:absolute;
+    font-size:30px;
+    top:0;
+    left:-10%;
+    opacity:0;
+    animation-name:run;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+  }
+  @keyframes run{
+    0%{left:-10%;opacity:0;transform:scaleX(1) translateY(0);}
+    5%{opacity:1;}
+    50%{transform:scaleX(1) translateY(-14px);}
+    95%{opacity:1;}
+    100%{left:108%;opacity:0;transform:scaleX(1) translateY(0);}
+  }
+  .runner.rev{animation-name:runRev;}
+  @keyframes runRev{
+    0%{left:108%;opacity:0;transform:scaleX(-1) translateY(0);}
+    5%{opacity:1;}
+    50%{transform:scaleX(-1) translateY(-14px);}
+    95%{opacity:1;}
+    100%{left:-10%;opacity:0;transform:scaleX(-1) translateY(0);}
+  }
+
+  #flash{
+    position:fixed;
+    inset:0;
+    background:radial-gradient(circle, rgba(255,214,102,0.55), rgba(255,214,102,0) 65%);
+    opacity:0;
+    pointer-events:none;
+    z-index:190;
+  }
+
+  #confetti-canvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:200;
+  }
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<button id="musicBtn">🎵 Play music</button>
+
+<div id="cover">
+  <div class="cover-badge">A Franklin Colucci production</div>
+  <h1>You've got a <span>road trip</span><br>waiting, Raphael.</h1>
+  <p>One route. Ten stops. Twenty-something years of main-character energy. Buckle up — it's your birthday.</p>
+  <button id="startBtn">Start the engine 🏍️</button>
+  <div class="roadline-mini"></div>
+</div>
+
+<main id="journey">
+
+  <section class="hero">
+    <div class="eyebrow">Route: Raph's Twenties</div>
+    <h1>Happy Birthday,<br><span class="hl">Raphael Gacomo</span></h1>
+    <p class="sub">Age: classified 🤫 — some legends don't do exact numbers, they just do "still got it." Somewhere in the 20s, definitely still winning. Scroll down, this route's got ten stops before we hit the destination.</p>
+    <div class="scroll-hint">
+      <span>SCROLL TO DRIVE</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
+
+  <div class="road-wrap" id="roadWrap">
+    <svg class="road-svg" id="roadSvg"></svg>
+    <div id="travelIcon">🏍️</div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop10.jpg" alt="Raphael at Sambalat">
+        <div class="tag">Checkpoint 01 · Sambalat</div>
+        <div class="cap">A pause on the road, sun catching everything just right</div>
+        <div class="note">Some places just look better because you're standing in them.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop9.jpg" alt="Raphael at Lomut River">
+        <div class="tag">Checkpoint 02 · Lomut River</div>
+        <div class="cap">Still, easy, unhurried — worth freezing in time</div>
+        <div class="note">Not every stop needs a reason. Some are just good to be in.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop8.jpg" alt="Raphael on the street">
+        <div class="tag">Checkpoint 03</div>
+        <div class="cap">Walking like the day already knows how it's going to go</div>
+        <div class="note">There's a kind of confidence that doesn't try too hard. This is it.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop7.jpg" alt="Raphael in leather jacket with goggles">
+        <div class="tag">Checkpoint 04</div>
+        <div class="cap">The kind of photo that doesn't need a caption, but here's one anyway</div>
+        <div class="note">Some people take pictures. Others just happen to be photogenic by accident.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop6.jpg" alt="Raphael sitting on a tree stump">
+        <div class="tag">Checkpoint 05</div>
+        <div class="cap">A thumbs up from somewhere quiet, and somehow that says enough</div>
+        <div class="note">Good things don't always need an explanation.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop5.jpg" alt="Raphael in a black polo at an event">
+        <div class="tag">Checkpoint 06</div>
+        <div class="cap">Dressed for the occasion, whatever the occasion was</div>
+        <div class="note">Some people just know how to show up right.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop4.jpg" alt="Raphael watching football at a bar">
+        <div class="tag">Checkpoint 07</div>
+        <div class="cap">Fully present, fully focused, exactly where he wants to be</div>
+        <div class="note">The best moments are the ones that don't need to be anywhere else.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop3.jpg" alt="Raphael on a construction site in a hard hat">
+        <div class="tag">Checkpoint 08</div>
+        <div class="cap">Hands-on, unbothered, getting it done</div>
+        <div class="note">Not every chapter is glamorous, but every chapter counts.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop2.jpg" alt="Raphael on a forest road">
+        <div class="tag">Checkpoint 09</div>
+        <div class="cap">Just him and the road ahead, exactly how it should be</div>
+        <div class="note">This one feels like the start of something, not the middle.</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="sign">
+        <img src="images/stop1.jpg" alt="Raphael on a garden path">
+        <div class="tag">Checkpoint 10</div>
+        <div class="cap">One stop before the destination, still just as steady</div>
+        <div class="note">Almost there. You can feel it.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="game-section" id="gameSection">
+    <h2>One last thing before the destination 🎈</h2>
+    <p class="sub">Pop every balloon to unlock your birthday message. No pressure — but the road ends when you do.</p>
+    <div id="balloonField"></div>
+    <div id="gameProgress">0 / 8 popped</div>
+  </section>
+
+  <section class="finale hidden" id="finaleSection">
+    <div class="runners" id="runners"></div>
+    <div class="signpost">You have arrived</div>
+    <h2>Happy Birthday,<br><span class="hl">Raphael!</span> 🎉</h2>
+    <p id="finaleMsg"></p>
+    <button id="confettiBtn">Launch the celebration 🎆</button>
+    <div class="footer-note">Made with way too much love (and a bit of code) by Colucci</div>
+  </section>
+
+</main>
+
+<div id="flash"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+const cover = document.getElementById('cover');
+const startBtn = document.getElementById('startBtn');
+startBtn.addEventListener('click', () => {
+  cover.classList.add('opened');
+  setTimeout(()=>{ cover.style.display='none'; }, 950);
+});
+
+let audioCtx = null;
+let musicPlaying = false;
+let musicTimer = null;
+const musicBtn = document.getElementById('musicBtn');
+const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+const riff = [0,2,4,2,3,5,4,2,0,4,3,2];
+
+function playNote(freq, time, dur, vol){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(vol, time + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + dur + 0.05);
+
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.value = freq/2;
+  gain2.gain.setValueAtTime(0, time);
+  gain2.gain.linearRampToValueAtTime(vol*0.4, time + 0.02);
+  gain2.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  osc2.connect(gain2).connect(audioCtx.destination);
+  osc2.start(time);
+  osc2.stop(time + dur + 0.05);
+}
+
+function scheduleLoop(){
+  if(!musicPlaying) return;
+  const now = audioCtx.currentTime + 0.05;
+  const step = 0.26;
+  riff.forEach((idx,i)=>{
+    playNote(scale[idx], now + i*step, step*0.9, 0.045);
+  });
+  musicTimer = setTimeout(scheduleLoop, riff.length*step*1000);
+}
+
+musicBtn.addEventListener('click', () => {
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(!musicPlaying){
+    musicPlaying = true;
+    audioCtx.resume();
+    scheduleLoop();
+    musicBtn.textContent = '🔇 Pause music';
+  } else {
+    musicPlaying = false;
+    clearTimeout(musicTimer);
+    musicBtn.textContent = '🎵 Play music';
+  }
+});
+
+const roadWrap = document.getElementById('roadWrap');
+const roadSvg = document.getElementById('roadSvg');
+const travelIcon = document.getElementById('travelIcon');
+const stopEls = Array.from(document.querySelectorAll('.stop'));
+
+let roadPathEl = null;
+let roadTotalLength = 0;
+let roadWrapTopCache = 0;
+let roadWrapHeightCache = 0;
+
+function buildRoad(){
+  const wrapRect = roadWrap.getBoundingClientRect();
+  const W = roadWrap.offsetWidth;
+  const H = roadWrap.offsetHeight;
+  if(W === 0 || H === 0) return;
+
+  roadSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const isMobile = window.innerWidth <= 760;
+  const centerX = isMobile ? 26 : W/2;
+  const ampl = isMobile ? Math.min(26, W*0.05) : Math.min(160, W*0.30);
+
+  const points = [{x:centerX, y:0}];
+  stopEls.forEach((el,i)=>{
+    const r = el.getBoundingClientRect();
+    const y = r.top - wrapRect.top + r.height/2;
+    const side = i%2===0 ? -1 : 1;
+    const x = isMobile ? centerX + (i%2===0 ? ampl*0.4 : ampl) : centerX + side*ampl;
+    points.push({x, y});
+  });
+  points.push({x:centerX, y:H});
+
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for(let i=0; i<points.length-1; i++){
+    const p0 = points[i===0?0:i-1];
+    const p1 = points[i];
+    const p2 = points[i+1];
+    const p3 = points[i+2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x)/6;
+    const cp1y = p1.y + (p2.y - p0.y)/6;
+    const cp2x = p2.x - (p3.x - p1.x)/6;
+    const cp2y = p2.y - (p3.y - p1.y)/6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+
+  let pinsHtml = '';
+  points.slice(1,-1).forEach(p=>{
+    pinsHtml += `<circle cx="${p.x}" cy="${p.y}" r="8" fill="#FF6F59" stroke="#1B1B24" stroke-width="4"/><circle cx="${p.x}" cy="${p.y}" r="13" fill="none" stroke="#FFB627" stroke-width="2" opacity="0.85"/>`;
+  });
+
+  roadSvg.innerHTML = `
+    <path d="${d}" fill="none" stroke="#1B1B24" stroke-width="18" stroke-linecap="round"/>
+    <path id="centerLine" d="${d}" fill="none" stroke="#FFB627" stroke-width="3" stroke-dasharray="16 20" stroke-linecap="round" opacity="0.9"/>
+    ${pinsHtml}
+  `;
+
+  roadPathEl = document.getElementById('centerLine');
+  roadTotalLength = roadPathEl.getTotalLength();
+  roadWrapTopCache = wrapRect.top + window.scrollY;
+  roadWrapHeightCache = H;
+
+  updateTravelIcon();
+}
+
+function updateTravelIcon(){
+  if(!roadPathEl) return;
+  const scrollY = window.scrollY || window.pageYOffset;
+  const viewportCenter = scrollY + window.innerHeight*0.5;
+  let progress = (viewportCenter - roadWrapTopCache) / roadWrapHeightCache;
+  progress = Math.max(0, Math.min(1, progress));
+  const len = progress*roadTotalLength;
+  const pt = roadPathEl.getPointAtLength(len);
+  const pt2 = roadPathEl.getPointAtLength(Math.min(roadTotalLength, len+2));
+  const angle = Math.atan2(pt2.y-pt.y, pt2.x-pt.x) * 180/Math.PI;
+  travelIcon.style.left = pt.x + 'px';
+  travelIcon.style.top = pt.y + 'px';
+  travelIcon.style.transform = `translate(-50%,-50%) rotate(${angle+90}deg)`;
+}
+
+window.addEventListener('scroll', updateTravelIcon);
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(buildRoad, 150);
+});
+window.addEventListener('load', buildRoad);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(buildRoad);
+}
+setTimeout(buildRoad, 300);
+
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('visible');
+  });
+},{threshold:0.25});
+stopEls.forEach(s=>io.observe(s));
+
+const balloonColors = ['#FF6F59','#FFB627','#2FA88A','#FF9AA2','#FFD447','#8ED1B0','#FF8C7A','#F6C453'];
+const wishes = [
+  "May this year hand you every green light 🚦",
+  "May the road ahead be smoother than the last one 🏍️",
+  "May your matches always end in a win ⚽",
+  "May the hustle finally pay off, big time 💪",
+  "May you never run out of good playlists for long drives 🎶",
+  "May your coffee be strong and your patience stronger ☕",
+  "May this year bring the big wins, all of it 🎯",
+  "May you keep being the best-dressed guy at every event 😎"
+];
+const field = document.getElementById('balloonField');
+const progressEl = document.getElementById('gameProgress');
+let popped = 0;
+const total = balloonColors.length;
+
+function spawnBalloons(){
+  field.innerHTML = '';
+  balloonColors.forEach((color, i)=>{
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    b.style.background = color;
+    b.style.left = (6 + (i * (88/total)) + (Math.random()*4)) + '%';
+    b.style.animationDelay = (i*0.35) + 's';
+    b.style.setProperty('--drift', (Math.random()*60-30)+'px');
+    b.dataset.wish = wishes[i];
+    b.addEventListener('click', onPop, {once:true});
+    field.appendChild(b);
+  });
+}
+spawnBalloons();
+
+function onPop(e){
+  const b = e.currentTarget;
+  b.classList.add('popped');
+  popped++;
+  progressEl.textContent = popped + ' / ' + total + ' popped';
+  miniConfettiBurst(e.clientX, e.clientY, b.style.background);
+  if(popped >= total){
+    setTimeout(revealFinale, 500);
+  }
+}
+
+const finaleSection = document.getElementById('finaleSection');
+function revealFinale(){
+  finaleSection.classList.remove('hidden');
+  finaleSection.scrollIntoView({behavior:'smooth'});
+  typeMessage();
+  spawnRunners();
+}
+
+const fullMessage = "From quiet backroads to busy match nights, from job sites to dressed-up evenings — this year carried you through all of it, and somehow you made every version of it look easy. Here's to more roads worth taking, more moments worth freezing, and another year of being exactly this effortless. Happy Birthday, Raph. Let's see where the road goes next.";
+function typeMessage(){
+  const el = document.getElementById('finaleMsg');
+  el.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  function tick(){
+    if(i <= fullMessage.length){
+      el.textContent = fullMessage.slice(0,i);
+      el.appendChild(cursor);
+      i++;
+      setTimeout(tick, 16);
+    } else {
+      cursor.remove();
+    }
+  }
+  tick();
+}
+
+function spawnRunners(){
+  const runners = document.getElementById('runners');
+  runners.innerHTML = '';
+  const emojis = ['🕺','💃','🏃','🎉','🏃‍♀️','🎊'];
+  const rows = [30, 90, 150, 210];
+  emojis.forEach((em, i)=>{
+    const s = document.createElement('span');
+    s.className = 'runner' + (i%2===1 ? ' rev' : '');
+    s.textContent = em;
+    s.style.top = rows[i % rows.length] + 'px';
+    s.style.animationDuration = (5 + Math.random()*3) + 's';
+    s.style.animationDelay = (i*0.6) + 's';
+    runners.appendChild(s);
+  });
+}
+
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){canvas.width = window.innerWidth; canvas.height = window.innerHeight;}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let particles = [];
+function makeBurst(x, y, count, colors, opts){
+  opts = opts || {};
+  const speed = opts.speed || 12;
+  const spread = opts.spread || Math.PI*2;
+  const startAngle = opts.startAngle || 0;
+  for(let i=0;i<count;i++){
+    const angle = startAngle + Math.random()*spread - spread/2;
+    const v = (Math.random()*0.6+0.4) * speed;
+    const isRibbon = Math.random() > 0.6;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle)*v,
+      vy: Math.sin(angle)*v - (opts.upward?6:0),
+      size: isRibbon ? (Math.random()*6+6) : (Math.random()*7+4),
+      length: isRibbon ? (Math.random()*14+10) : 0,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      rot: Math.random()*360,
+      vrot: (Math.random()-0.5)*20,
+      gravity: 0.28 + Math.random()*0.15,
+      drag: 0.985,
+      life: 0,
+      maxLife: 110 + Math.random()*70,
+      shape: isRibbon ? 'ribbon' : (Math.random()>0.5?'rect':'circle')
+    });
+  }
+}
+
+function miniConfettiBurst(x,y,color){
+  makeBurst(x,y,22,[color,'#FFF6E9','#FFB627'],{speed:8,upward:true});
+  if(!animating) animate();
+}
+
+function bigConfettiBurst(){
+  const colors = ['#FF6F59','#FFB627','#2FA88A','#FFF6E9','#8ED1B0','#FF9AA2','#FFD447','#7CD4FF'];
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  flashScreen();
+
+  makeBurst(w*0.02, h*1.0, 90, colors, {speed:26, spread:Math.PI*0.6, startAngle:-Math.PI/2, upward:true});
+  makeBurst(w*0.98, h*1.0, 90, colors, {speed:26, spread:Math.PI*0.6, startAngle:-Math.PI/2, upward:true});
+
+  const bursts = [
+    {x:w*0.2, y:h*0.28, t:150},
+    {x:w*0.5, y:h*0.16, t:350},
+    {x:w*0.8, y:h*0.28, t:550},
+    {x:w*0.35, y:h*0.4, t:800},
+    {x:w*0.65, y:h*0.4, t:1000},
+  ];
+  bursts.forEach(b=>{
+    setTimeout(()=>{
+      makeBurst(b.x, b.y, 110, colors, {speed:14, spread:Math.PI*2});
+      flashScreen(0.25);
+      if(!animating) animate();
+    }, b.t);
+  });
+
+  if(!animating) animate();
+}
+
+function flashScreen(strength){
+  const flash = document.getElementById('flash');
+  flash.style.transition = 'none';
+  flash.style.opacity = String(strength || 0.7);
+  requestAnimationFrame(()=>{
+    flash.style.transition = 'opacity 0.6s ease';
+    flash.style.opacity = '0';
+  });
+}
+
+let animating = false;
+function animate(){
+  animating = true;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.vy += p.gravity*0.08;
+    p.vx *= p.drag;
+    p.vy *= p.drag;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.vrot;
+    p.life++;
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate(p.rot*Math.PI/180);
+    ctx.globalAlpha = Math.max(0, 1 - p.life/p.maxLife);
+    ctx.fillStyle = p.color;
+    if(p.shape==='ribbon'){
+      ctx.fillRect(-p.size/2, -p.length/2, p.size*0.35, p.length);
+    } else if(p.shape==='rect'){
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0,0,p.size/2,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+  particles = particles.filter(p=>p.life < p.maxLife && p.y < canvas.height+80);
+  if(particles.length>0){
+    requestAnimationFrame(animate);
+  } else {
+    animating = false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+document.getElementById('confettiBtn').addEventListener('click', bigConfettiBurst);
+</script>
+</body>
+</html>
